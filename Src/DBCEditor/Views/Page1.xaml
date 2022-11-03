@@ -1,0 +1,980 @@
+﻿<Page x:Class="DBCEditor.Views.Page1"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2"
+      xmlns:common="clr-namespace:DBCEditor.Common"
+      xmlns:controls="clr-namespace:DBCEditor.Controls"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:local="clr-namespace:DBCEditor.Views"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:models="clr-namespace:DBCEditor.Models"
+      xmlns:theme="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Classic"
+      xmlns:viewmodels="clr-namespace:DBCEditor.ViewModels" Title="Page1"
+      d:DataContext="{d:DesignInstance Type=viewmodels:CANFrameViewModel}"
+      d:DesignHeight="600" d:DesignWidth="1000" mc:Ignorable="d">
+    <Page.Resources>
+        <Style x:Key="ColumnHeaderGripperStyle" TargetType="{x:Type Thumb}">
+            <Setter Property="Width" Value="8" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Cursor" Value="SizeWE" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Thumb}">
+                        <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="DataGridColumnHeaderStyle1" TargetType="{x:Type DataGridColumnHeader}">
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Foreground" Value="Blue" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type DataGridColumnHeader}">
+                        <Grid>
+                            <theme:DataGridHeaderBorder Padding="5" Background="White"
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        IsClickable="{TemplateBinding CanUserSort}"
+                                                        IsHovered="{TemplateBinding IsMouseOver}"
+                                                        IsPressed="{TemplateBinding IsPressed}"
+                                                        SeparatorBrush="{TemplateBinding SeparatorBrush}"
+                                                        SeparatorVisibility="{TemplateBinding SeparatorVisibility}"
+                                                        SortDirection="{TemplateBinding SortDirection}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                  RecognizesAccessKey="True"
+                                                  SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                            </theme:DataGridHeaderBorder>
+                            <Border VerticalAlignment="Bottom" BorderBrush="Black" BorderThickness="0.75" />
+                            <Thumb x:Name="PART_LeftHeaderGripper" HorizontalAlignment="Left"
+                                   Style="{StaticResource ColumnHeaderGripperStyle}" />
+                            <Thumb x:Name="PART_RightHeaderGripper" HorizontalAlignment="Right"
+                                   Style="{StaticResource ColumnHeaderGripperStyle}" />
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="DataGridRowStyle1" TargetType="{x:Type DataGridRow}">
+            <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" />
+            <Setter Property="SnapsToDevicePixels" Value="true" />
+            <Setter Property="Validation.ErrorTemplate" Value="{x:Null}" />
+            <Setter Property="ValidationErrorTemplate">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <TextBlock Margin="2 0 0 0" VerticalAlignment="Center" Foreground="Red" Text="!" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type DataGridRow}">
+                        <Border x:Name="DGR_Border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                SnapsToDevicePixels="True">
+                            <SelectiveScrollingGrid>
+                                <SelectiveScrollingGrid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </SelectiveScrollingGrid.ColumnDefinitions>
+                                <SelectiveScrollingGrid.RowDefinitions>
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="Auto" />
+                                </SelectiveScrollingGrid.RowDefinitions>
+                                <DataGridCellsPresenter Grid.Column="1"
+                                                        ItemsPanel="{TemplateBinding ItemsPanel}"
+                                                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                <DataGridDetailsPresenter Grid.Row="1" Grid.Column="1"
+                                                          SelectiveScrollingGrid.SelectiveScrollingOrientation="{Binding AreRowDetailsFrozen, ConverterParameter={x:Static SelectiveScrollingOrientation.Vertical}, Converter={x:Static DataGrid.RowDetailsScrollingConverter}, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"
+                                                          Visibility="{TemplateBinding DetailsVisibility}" />
+                                <DataGridRowHeader Grid.RowSpan="2" SelectiveScrollingGrid.SelectiveScrollingOrientation="Vertical"
+                                                   Visibility="{Binding HeadersVisibility, ConverterParameter={x:Static DataGridHeadersVisibility.Row}, Converter={x:Static DataGrid.HeadersVisibilityConverter}, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" />
+                            </SelectiveScrollingGrid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsNewItem" Value="True">
+                    <Setter Property="Margin" Value="{Binding NewItemMargin, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <BooleanToVisibilityConverter x:Key="bool2VisibilityConverter" />
+        <Style x:Key="RowHeaderGripperStyle" TargetType="{x:Type Thumb}">
+            <Setter Property="Height" Value="8" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Cursor" Value="SizeNS" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Thumb}">
+                        <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="DataGridRowHeaderStyle1" TargetType="{x:Type DataGridRowHeader}">
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Foreground" Value="{StaticResource Blue1}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type DataGridRowHeader}">
+                        <Grid>
+                            <theme:DataGridHeaderBorder Padding="{TemplateBinding Padding}"
+                                                        Background="White"
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        IsHovered="{TemplateBinding IsMouseOver}"
+                                                        IsPressed="{TemplateBinding IsPressed}"
+                                                        IsSelected="{TemplateBinding IsRowSelected}"
+                                                        Orientation="Horizontal"
+                                                        SeparatorBrush="{TemplateBinding SeparatorBrush}"
+                                                        SeparatorVisibility="{TemplateBinding SeparatorVisibility}">
+                                <Grid>
+                                    <StackPanel Orientation="Horizontal">
+                                        <ContentPresenter Margin="10 0 10 0" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                          RecognizesAccessKey="True"
+                                                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                        <Control SnapsToDevicePixels="false"
+                                                 Template="{Binding ValidationErrorTemplate, RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}}}"
+                                                 Visibility="{Binding (Validation.HasError), Converter={StaticResource bool2VisibilityConverter}, RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}}}" />
+                                    </StackPanel>
+                                    <!--<Border VerticalAlignment="Bottom" BorderBrush="Black" BorderThickness="0.5" />-->
+                                    <Border HorizontalAlignment="Right" BorderBrush="Black" BorderThickness="0.5" />
+
+                                </Grid>
+
+                            </theme:DataGridHeaderBorder>
+                            <Thumb x:Name="PART_TopHeaderGripper" VerticalAlignment="Top"
+                                   Style="{StaticResource RowHeaderGripperStyle}" />
+                            <Thumb x:Name="PART_BottomHeaderGripper" VerticalAlignment="Bottom"
+                                   Style="{StaticResource RowHeaderGripperStyle}" />
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <SolidColorBrush x:Key="{x:Static DataGrid.FocusBorderBrushKey}" Color="#FF000000" />
+        <Style x:Key="DataGridCellStyle1" TargetType="{x:Type DataGridCell}">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type DataGridCell}">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Right" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" />
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" />
+                </Trigger>
+                <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                    <Setter Property="BorderBrush" Value="{DynamicResource {x:Static DataGrid.FocusBorderBrushKey}}" />
+                </Trigger>
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="IsSelected" Value="true" />
+                        <Condition Property="Selector.IsSelectionActive" Value="false" />
+                    </MultiTrigger.Conditions>
+                    <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.InactiveSelectionHighlightBrushKey}}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.InactiveSelectionHighlightBrushKey}}" />
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}}" />
+                </MultiTrigger>
+                <Trigger Property="IsEnabled" Value="false">
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="DataGridCellStyle2"
+               BasedOn="{StaticResource DataGridCellStyle1}"
+               TargetType="{x:Type DataGridCell}">
+            <Setter Property="Background" Value="Yellow" />
+
+        </Style>
+        <Style x:Key="DataGridCellStyleBitNumber" TargetType="{x:Type DataGridCell}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DataGridCell">
+                        <Border>
+                            <TextBlock Text="{Binding DataNumber}" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="IndexStatusBorder" TargetType="Border">
+            <Setter Property="MinHeight" Value="16" />
+            <Setter Property="MinWidth" Value="20" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IndexStatus}" Value="{x:Static models:FrameIndexStatus.BitStart}">
+                    <Setter Property="Background" Value="LightGreen" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IndexStatus}" Value="{x:Static models:FrameIndexStatus.Data}">
+                    <Setter Property="Background" Value="LightBlue" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IndexStatus}" Value="{x:Static models:FrameIndexStatus.MSB}">
+                    <Setter Property="Background" Value="Orange" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="DataNumberTextBlock" TargetType="TextBlock">
+            <Setter Property="Text" Value="{Binding DataNumber}" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="FrameIndexTextBlock" TargetType="TextBlock">
+            <Setter Property="Text" Value="{Binding FrameIndex}" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="FocusVisual">
+            <Setter Property="Control.Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Rectangle Margin="2" SnapsToDevicePixels="true"
+                                   Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"
+                                   StrokeDashArray="1 2" StrokeThickness="1" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <SolidColorBrush x:Key="TextBox.Static.Background" Color="#FFFFFFFF" />
+        <Style x:Key="ComboBoxEditableTextBox" TargetType="{x:Type TextBox}">
+            <Setter Property="OverridesDefaultStyle" Value="true" />
+            <Setter Property="AllowDrop" Value="true" />
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="ScrollViewer.PanningMode" Value="VerticalFirst" />
+            <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TextBox}">
+                        <ScrollViewer x:Name="PART_ContentHost" Background="Transparent" Focusable="false"
+                                      HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <LinearGradientBrush x:Key="ComboBox.Static.Background" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Offset="0.0" Color="#FFF0F0F0" />
+            <GradientStop Offset="1.0" Color="#FFE5E5E5" />
+        </LinearGradientBrush>
+        <SolidColorBrush x:Key="ComboBox.Static.Border" Color="#FFACACAC" />
+        <SolidColorBrush x:Key="ComboBox.Static.Glyph" Color="#FF606060" />
+        <SolidColorBrush x:Key="ComboBox.Static.Editable.Background" Color="#FFFFFFFF" />
+        <SolidColorBrush x:Key="ComboBox.Static.Editable.Border" Color="#FFABADB3" />
+        <SolidColorBrush x:Key="ComboBox.Static.Editable.Button.Background" Color="Transparent" />
+        <SolidColorBrush x:Key="ComboBox.Static.Editable.Button.Border" Color="Transparent" />
+        <LinearGradientBrush x:Key="ComboBox.MouseOver.Background" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Offset="0.0" Color="#FFECF4FC" />
+            <GradientStop Offset="1.0" Color="#FFDCECFC" />
+        </LinearGradientBrush>
+        <SolidColorBrush x:Key="ComboBox.MouseOver.Border" Color="#FF7EB4EA" />
+        <SolidColorBrush x:Key="ComboBox.MouseOver.Glyph" Color="#FF000000" />
+        <SolidColorBrush x:Key="ComboBox.MouseOver.Editable.Background" Color="#FFFFFFFF" />
+        <SolidColorBrush x:Key="ComboBox.MouseOver.Editable.Border" Color="#FF7EB4EA" />
+        <LinearGradientBrush x:Key="ComboBox.MouseOver.Editable.Button.Background" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Offset="0.0" Color="#FFEBF4FC" />
+            <GradientStop Offset="1.0" Color="#FFDCECFC" />
+        </LinearGradientBrush>
+        <SolidColorBrush x:Key="ComboBox.MouseOver.Editable.Button.Border" Color="#FF7EB4EA" />
+        <LinearGradientBrush x:Key="ComboBox.Pressed.Background" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Offset="0.0" Color="#FFDAECFC" />
+            <GradientStop Offset="1.0" Color="#FFC4E0FC" />
+        </LinearGradientBrush>
+        <SolidColorBrush x:Key="ComboBox.Pressed.Border" Color="#FF569DE5" />
+        <SolidColorBrush x:Key="ComboBox.Pressed.Glyph" Color="#FF000000" />
+        <SolidColorBrush x:Key="ComboBox.Pressed.Editable.Background" Color="#FFFFFFFF" />
+        <SolidColorBrush x:Key="ComboBox.Pressed.Editable.Border" Color="#FF569DE5" />
+        <LinearGradientBrush x:Key="ComboBox.Pressed.Editable.Button.Background" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Offset="0.0" Color="#FFDAEBFC" />
+            <GradientStop Offset="1.0" Color="#FFC4E0FC" />
+        </LinearGradientBrush>
+        <SolidColorBrush x:Key="ComboBox.Pressed.Editable.Button.Border" Color="#FF569DE5" />
+        <SolidColorBrush x:Key="ComboBox.Disabled.Background" Color="#FFF0F0F0" />
+        <SolidColorBrush x:Key="ComboBox.Disabled.Border" Color="#FFD9D9D9" />
+        <SolidColorBrush x:Key="ComboBox.Disabled.Glyph" Color="#FFBFBFBF" />
+        <SolidColorBrush x:Key="ComboBox.Disabled.Editable.Background" Color="#FFFFFFFF" />
+        <SolidColorBrush x:Key="ComboBox.Disabled.Editable.Border" Color="#FFBFBFBF" />
+        <SolidColorBrush x:Key="ComboBox.Disabled.Editable.Button.Background" Color="Transparent" />
+        <SolidColorBrush x:Key="ComboBox.Disabled.Editable.Button.Border" Color="Transparent" />
+        <Style x:Key="ComboBoxToggleButton" TargetType="{x:Type ToggleButton}">
+            <Setter Property="OverridesDefaultStyle" Value="true" />
+            <Setter Property="IsTabStop" Value="false" />
+            <Setter Property="Focusable" Value="false" />
+            <Setter Property="ClickMode" Value="Press" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ToggleButton}">
+                        <Border x:Name="templateRoot" Background="#ffff00"
+                                BorderBrush="{StaticResource ComboBox.Static.Border}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                SnapsToDevicePixels="true">
+                            <Border x:Name="splitBorder"
+                                    Width="{DynamicResource {x:Static SystemParameters.VerticalScrollBarWidthKey}}"
+                                    Margin="0" HorizontalAlignment="Right" BorderBrush="Transparent"
+                                    BorderThickness="1" SnapsToDevicePixels="true">
+                                <Path x:Name="arrow" Margin="0" HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      Data="F1 M 0,0 L 2.667,2.66665 L 5.3334,0 L 5.3334,-1.78168 L 2.6667,0.88501 L0,-1.78168 L0,0 Z"
+                                      Fill="{StaticResource ComboBox.Static.Glyph}" />
+                            </Border>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding IsEditable, RelativeSource={RelativeSource AncestorType={x:Type ComboBox}}}" Value="true" />
+                                    <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="false" />
+                                    <Condition Binding="{Binding IsPressed, RelativeSource={RelativeSource Self}}" Value="false" />
+                                    <Condition Binding="{Binding IsEnabled, RelativeSource={RelativeSource Self}}" Value="true" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter TargetName="templateRoot" Property="Background" Value="{StaticResource ComboBox.Static.Editable.Background}" />
+                                <Setter TargetName="templateRoot" Property="BorderBrush" Value="{StaticResource ComboBox.Static.Editable.Border}" />
+                                <Setter TargetName="splitBorder" Property="Background" Value="{StaticResource ComboBox.Static.Editable.Button.Background}" />
+                                <Setter TargetName="splitBorder" Property="BorderBrush" Value="{StaticResource ComboBox.Static.Editable.Button.Border}" />
+                            </MultiDataTrigger>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter TargetName="arrow" Property="Fill" Value="{StaticResource ComboBox.MouseOver.Glyph}" />
+                            </Trigger>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="true" />
+                                    <Condition Binding="{Binding IsEditable, RelativeSource={RelativeSource AncestorType={x:Type ComboBox}}}" Value="false" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter TargetName="templateRoot" Property="Background" Value="{StaticResource ComboBox.MouseOver.Background}" />
+                                <Setter TargetName="templateRoot" Property="BorderBrush" Value="{StaticResource ComboBox.MouseOver.Border}" />
+                            </MultiDataTrigger>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="true" />
+                                    <Condition Binding="{Binding IsEditable, RelativeSource={RelativeSource AncestorType={x:Type ComboBox}}}" Value="true" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter TargetName="templateRoot" Property="Background" Value="{StaticResource ComboBox.MouseOver.Editable.Background}" />
+                                <Setter TargetName="templateRoot" Property="BorderBrush" Value="{StaticResource ComboBox.MouseOver.Editable.Border}" />
+                                <Setter TargetName="splitBorder" Property="Background" Value="{StaticResource ComboBox.MouseOver.Editable.Button.Background}" />
+                                <Setter TargetName="splitBorder" Property="BorderBrush" Value="{StaticResource ComboBox.MouseOver.Editable.Button.Border}" />
+                            </MultiDataTrigger>
+                            <Trigger Property="IsPressed" Value="true">
+                                <Setter TargetName="arrow" Property="Fill" Value="{StaticResource ComboBox.Pressed.Glyph}" />
+                            </Trigger>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding IsPressed, RelativeSource={RelativeSource Self}}" Value="true" />
+                                    <Condition Binding="{Binding IsEditable, RelativeSource={RelativeSource AncestorType={x:Type ComboBox}}}" Value="false" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter TargetName="templateRoot" Property="Background" Value="{StaticResource ComboBox.Pressed.Background}" />
+                                <Setter TargetName="templateRoot" Property="BorderBrush" Value="{StaticResource ComboBox.Pressed.Border}" />
+                            </MultiDataTrigger>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding IsPressed, RelativeSource={RelativeSource Self}}" Value="true" />
+                                    <Condition Binding="{Binding IsEditable, RelativeSource={RelativeSource AncestorType={x:Type ComboBox}}}" Value="true" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter TargetName="templateRoot" Property="Background" Value="{StaticResource ComboBox.Pressed.Editable.Background}" />
+                                <Setter TargetName="templateRoot" Property="BorderBrush" Value="{StaticResource ComboBox.Pressed.Editable.Border}" />
+                                <Setter TargetName="splitBorder" Property="Background" Value="{StaticResource ComboBox.Pressed.Editable.Button.Background}" />
+                                <Setter TargetName="splitBorder" Property="BorderBrush" Value="{StaticResource ComboBox.Pressed.Editable.Button.Border}" />
+                            </MultiDataTrigger>
+                            <Trigger Property="IsEnabled" Value="false">
+                                <Setter TargetName="arrow" Property="Fill" Value="{StaticResource ComboBox.Disabled.Glyph}" />
+                            </Trigger>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding IsEnabled, RelativeSource={RelativeSource Self}}" Value="false" />
+                                    <Condition Binding="{Binding IsEditable, RelativeSource={RelativeSource AncestorType={x:Type ComboBox}}}" Value="false" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter TargetName="templateRoot" Property="Background" Value="{StaticResource ComboBox.Disabled.Background}" />
+                                <Setter TargetName="templateRoot" Property="BorderBrush" Value="{StaticResource ComboBox.Disabled.Border}" />
+                            </MultiDataTrigger>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding IsEnabled, RelativeSource={RelativeSource Self}}" Value="false" />
+                                    <Condition Binding="{Binding IsEditable, RelativeSource={RelativeSource AncestorType={x:Type ComboBox}}}" Value="true" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter TargetName="templateRoot" Property="Background" Value="{StaticResource ComboBox.Disabled.Editable.Background}" />
+                                <Setter TargetName="templateRoot" Property="BorderBrush" Value="{StaticResource ComboBox.Disabled.Editable.Border}" />
+                                <Setter TargetName="splitBorder" Property="Background" Value="{StaticResource ComboBox.Disabled.Editable.Button.Background}" />
+                                <Setter TargetName="splitBorder" Property="BorderBrush" Value="{StaticResource ComboBox.Disabled.Editable.Button.Border}" />
+                            </MultiDataTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <ControlTemplate x:Key="ComboBoxEditableTemplate" TargetType="{x:Type ComboBox}">
+            <Grid x:Name="templateRoot" SnapsToDevicePixels="true">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="0" MinWidth="{DynamicResource {x:Static SystemParameters.VerticalScrollBarWidthKey}}" />
+                </Grid.ColumnDefinitions>
+                <Popup x:Name="PART_Popup" Grid.ColumnSpan="2" AllowsTransparency="true"
+                       IsOpen="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}"
+                       Placement="Bottom"
+                       PopupAnimation="{DynamicResource {x:Static SystemParameters.ComboBoxPopupAnimationKey}}">
+                    <Themes:SystemDropShadowChrome x:Name="shadow"
+                                                   MinWidth="{Binding ActualWidth, ElementName=templateRoot}"
+                                                   MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                                   Color="Transparent">
+                        <Border x:Name="dropDownBorder"
+                                Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"
+                                BorderBrush="{DynamicResource {x:Static SystemColors.WindowFrameBrushKey}}"
+                                BorderThickness="1">
+                            <ScrollViewer x:Name="DropDownScrollViewer">
+                                <Grid x:Name="grid" RenderOptions.ClearTypeHint="Enabled">
+                                    <Canvas x:Name="canvas" Width="0" Height="0" HorizontalAlignment="Left"
+                                            VerticalAlignment="Top">
+                                        <Rectangle x:Name="opaqueRect"
+                                                   Width="{Binding ActualWidth, ElementName=dropDownBorder}"
+                                                   Height="{Binding ActualHeight, ElementName=dropDownBorder}"
+                                                   Fill="{Binding Background, ElementName=dropDownBorder}" />
+                                    </Canvas>
+                                    <ItemsPresenter x:Name="ItemsPresenter" KeyboardNavigation.DirectionalNavigation="Contained"
+                                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                </Grid>
+                            </ScrollViewer>
+                        </Border>
+                    </Themes:SystemDropShadowChrome>
+                </Popup>
+                <ToggleButton x:Name="toggleButton" Grid.ColumnSpan="2"
+                              Background="{TemplateBinding Background}"
+                              BorderBrush="{TemplateBinding BorderBrush}"
+                              BorderThickness="{TemplateBinding BorderThickness}"
+                              IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                              Style="{StaticResource ComboBoxToggleButton}" />
+                <Border x:Name="border"
+                        Margin="{TemplateBinding BorderThickness}"
+                        Background="{StaticResource TextBox.Static.Background}">
+                    <TextBox x:Name="PART_EditableTextBox"
+                             Margin="{TemplateBinding Padding}"
+                             HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                             VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                             IsReadOnly="{Binding IsReadOnly, RelativeSource={RelativeSource TemplatedParent}}"
+                             Style="{StaticResource ComboBoxEditableTextBox}" />
+                </Border>
+            </Grid>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsEnabled" Value="false">
+                    <Setter TargetName="border" Property="Opacity" Value="0.56" />
+                </Trigger>
+                <Trigger Property="IsKeyboardFocusWithin" Value="true">
+                    <Setter Property="Foreground" Value="Black" />
+                </Trigger>
+                <Trigger SourceName="PART_Popup" Property="HasDropShadow" Value="true">
+                    <Setter TargetName="shadow" Property="Margin" Value="0 0 5 5" />
+                    <Setter TargetName="shadow" Property="Color" Value="#71000000" />
+                </Trigger>
+                <Trigger Property="HasItems" Value="false">
+                    <Setter TargetName="dropDownBorder" Property="Height" Value="95" />
+                </Trigger>
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="IsGrouping" Value="true" />
+                        <Condition Property="VirtualizingPanel.IsVirtualizingWhenGrouping" Value="false" />
+                    </MultiTrigger.Conditions>
+                    <Setter Property="ScrollViewer.CanContentScroll" Value="false" />
+                </MultiTrigger>
+                <Trigger SourceName="DropDownScrollViewer" Property="ScrollViewer.CanContentScroll" Value="false">
+                    <Setter TargetName="opaqueRect" Property="Canvas.Top" Value="{Binding VerticalOffset, ElementName=DropDownScrollViewer}" />
+                    <Setter TargetName="opaqueRect" Property="Canvas.Left" Value="{Binding HorizontalOffset, ElementName=DropDownScrollViewer}" />
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+        <ControlTemplate x:Key="ComboBoxTemplate" TargetType="{x:Type ComboBox}">
+            <Grid x:Name="templateRoot" SnapsToDevicePixels="true">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="0" MinWidth="{DynamicResource {x:Static SystemParameters.VerticalScrollBarWidthKey}}" />
+                </Grid.ColumnDefinitions>
+                <Popup x:Name="PART_Popup" Grid.ColumnSpan="2" Margin="1" AllowsTransparency="true"
+                       IsOpen="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                       Placement="Bottom"
+                       PopupAnimation="{DynamicResource {x:Static SystemParameters.ComboBoxPopupAnimationKey}}">
+                    <Themes:SystemDropShadowChrome x:Name="shadow"
+                                                   MinWidth="{Binding ActualWidth, ElementName=templateRoot}"
+                                                   MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                                   Color="Transparent">
+                        <Border x:Name="dropDownBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="1">
+                            <ScrollViewer x:Name="DropDownScrollViewer">
+                                <Grid x:Name="grid" RenderOptions.ClearTypeHint="Enabled">
+                                    <Canvas x:Name="canvas" Width="0" Height="0" HorizontalAlignment="Left"
+                                            VerticalAlignment="Top">
+                                        <Rectangle x:Name="opaqueRect"
+                                                   Width="{Binding ActualWidth, ElementName=dropDownBorder}"
+                                                   Height="{Binding ActualHeight, ElementName=dropDownBorder}"
+                                                   Fill="{Binding Background, ElementName=dropDownBorder}" />
+                                    </Canvas>
+                                    <ItemsPresenter x:Name="ItemsPresenter" KeyboardNavigation.DirectionalNavigation="Contained"
+                                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                </Grid>
+                            </ScrollViewer>
+                        </Border>
+                    </Themes:SystemDropShadowChrome>
+                </Popup>
+                <ToggleButton x:Name="toggleButton" Grid.ColumnSpan="2"
+                              Background="{TemplateBinding Background}"
+                              BorderBrush="{TemplateBinding BorderBrush}"
+                              BorderThickness="{TemplateBinding BorderThickness}"
+                              IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                              Style="{StaticResource ComboBoxToggleButton}" />
+                <ContentPresenter x:Name="contentPresenter"
+                                  Margin="{TemplateBinding Padding}"
+                                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                  Content="{TemplateBinding SelectionBoxItem}"
+                                  ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}"
+                                  ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                  ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                  IsHitTestVisible="false"
+                                  SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+            </Grid>
+            <ControlTemplate.Triggers>
+                <Trigger SourceName="PART_Popup" Property="HasDropShadow" Value="true">
+                    <Setter TargetName="shadow" Property="Margin" Value="0 0 5 5" />
+                    <Setter TargetName="shadow" Property="Color" Value="#71000000" />
+                </Trigger>
+                <Trigger Property="HasItems" Value="false">
+                    <Setter TargetName="dropDownBorder" Property="Height" Value="95" />
+                </Trigger>
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="IsGrouping" Value="true" />
+                        <Condition Property="VirtualizingPanel.IsVirtualizingWhenGrouping" Value="false" />
+                    </MultiTrigger.Conditions>
+                    <Setter Property="ScrollViewer.CanContentScroll" Value="false" />
+                </MultiTrigger>
+                <Trigger SourceName="DropDownScrollViewer" Property="ScrollViewer.CanContentScroll" Value="false">
+                    <Setter TargetName="opaqueRect" Property="Canvas.Top" Value="{Binding VerticalOffset, ElementName=DropDownScrollViewer}" />
+                    <Setter TargetName="opaqueRect" Property="Canvas.Left" Value="{Binding HorizontalOffset, ElementName=DropDownScrollViewer}" />
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+        <Style x:Key="ComboBoxStyle1" TargetType="{x:Type ComboBox}">
+            <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}" />
+            <Setter Property="Background" Value="#ffff00" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="ScrollViewer.CanContentScroll" Value="true" />
+            <Setter Property="ScrollViewer.PanningMode" Value="Both" />
+            <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
+            <Setter Property="Template" Value="{StaticResource ComboBoxTemplate}" />
+            <Setter Property="HorizontalContentAlignment" Value="Right" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Style.Triggers>
+                <Trigger Property="IsEditable" Value="true">
+                    <Setter Property="IsTabStop" Value="false" />
+                    <Setter Property="Padding" Value="2" />
+                    <Setter Property="Template" Value="{StaticResource ComboBoxEditableTemplate}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Page.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+
+            <Grid>
+                <StackPanel>
+                    <StackPanel Margin="10">
+                        <TextBlock FontSize="14" FontWeight="Bold" Text="CAN message" />
+                        <Grid controls:GridOptions.LineBrush="Black" controls:GridOptions.ShowBorder="True">
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition MinWidth="150" />
+                                <ColumnDefinition MinWidth="100" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="CAN ID (HEX)" />
+                            <TextBox Grid.Row=" 0" Grid.Column="1" HorizontalContentAlignment="Right"
+                                     VerticalContentAlignment="Center" d:Text="0CF00400" Background="#ffff00"
+                                     BorderThickness="0"
+                                     Text="{Binding CANFrame.CANIDHex}" />
+
+                            <TextBlock Grid.Row=" 1" Grid.Column="0" Text="Extended ID" />
+                            <ComboBox Grid.Row=" 1" Grid.Column="1"
+                                      ItemsSource="{Binding Source={common:EnumBindingSource {x:Type models:ExtendedID}}}"
+                                      SelectedItem="{Binding CANFrame.ExtendedID}"
+                                      Style="{StaticResource ComboBoxStyle1}" />
+
+                            <TextBlock Grid.Row=" 2" Grid.Column="0" Text="DBC ID (DEC)" />
+                            <TextBox Grid.Row=" 2" Grid.Column="1" HorizontalContentAlignment="Right"
+                                     VerticalContentAlignment="Center" d:Text="217056256" BorderThickness="0"
+                                     Text="{Binding CANFrame.CANIDDec}" />
+
+                        </Grid>
+                    </StackPanel>
+                    <StackPanel Margin="10">
+                        <TextBlock FontSize="14" FontWeight="Bold" Text="CAN signal" />
+                        <Grid controls:GridOptions.LineBrush="Black" controls:GridOptions.ShowBorder="True">
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition MinWidth="150" />
+                                <ColumnDefinition MinWidth="100" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Bit start (LSB)" />
+                            <TextBox Grid.Row=" 0" Grid.Column="1" HorizontalContentAlignment="Right"
+                                     VerticalContentAlignment="Center" d:Text="0" Background="#ffff00"
+                                     BorderThickness="0"
+                                     Text="{Binding CANFrame.BitStart}" />
+                            <TextBlock Grid.Row=" 1" Grid.Column="0" Text="Bit length" />
+                            <TextBox Grid.Row=" 1" Grid.Column="1" HorizontalContentAlignment="Right"
+                                     VerticalContentAlignment="Center" d:Text="8" Background="#ffff00"
+                                     BorderThickness="0"
+                                     Text="{Binding CANFrame.BitLength}" />
+
+
+                            <TextBlock Grid.Row=" 2" Grid.Column="0" Text="Endianness" />
+                            <ComboBox Grid.Row=" 2" Grid.Column="1"
+                                      ItemsSource="{Binding Source={common:EnumBindingSource {x:Type models:Endianness}}}"
+                                      SelectedItem="{Binding CANFrame.Endianness}"
+                                      Style="{StaticResource ComboBoxStyle1}" />
+
+                            <TextBox Grid.Row=" 3" Grid.Column="1" HorizontalContentAlignment="Right"
+                                     VerticalContentAlignment="Center" d:Text="0.125" Background="#ffff00"
+                                     BorderThickness="0"
+                                     Text="{Binding CANFrame.Scale}" />
+                            <TextBlock Grid.Row=" 3" Grid.Column="0" Text="Scale" />
+
+                            <TextBox Grid.Row=" 4" Grid.Column="1" HorizontalContentAlignment="Right"
+                                     VerticalContentAlignment="Center" d:Text="0" Background="#ffff00"
+                                     BorderThickness="0"
+                                     Text="{Binding CANFrame.Offset}" />
+                            <TextBlock Grid.Row=" 4" Grid.Column="0" Text="Offset" />
+
+                            <TextBox Grid.Row="5" Grid.Column="1" HorizontalContentAlignment="Right"
+                                     VerticalContentAlignment="Center" d:Text="0" Background="#ffff00"
+                                     BorderThickness="0"
+                                     Text="{Binding CANFrame.Max}" />
+                            <TextBlock Grid.Row="5" Grid.Column="0" Text="Max" />
+
+                            <TextBox Grid.Row=" 6" Grid.Column="1" HorizontalContentAlignment="Right"
+                                     VerticalContentAlignment="Center" d:Text="0" Background="#ffff00"
+                                     BorderThickness="0"
+                                     Text="{Binding CANFrame.Min}" />
+                            <TextBlock Grid.Row=" 6" Grid.Column="0" Text="Min" />
+
+                            <TextBox Grid.Row=" 7" Grid.Column="1" HorizontalContentAlignment="Right"
+                                     VerticalContentAlignment="Center" d:Text="7" BorderThickness="0"
+                                     IsReadOnly="True"
+                                     Text="{Binding CANFrame.MSB}" />
+                            <TextBlock Grid.Row=" 7" Grid.Column="0" Text="MSB" />
+
+                            <TextBox Grid.Row="8" Grid.Column="1" HorizontalContentAlignment="Right"
+                                     VerticalContentAlignment="Center" d:Text="rpm" Background="#ffff00"
+                                     BorderThickness="0"
+                                     Text="{Binding CANFrame.Unit}" />
+                            <TextBlock Grid.Row="8" Grid.Column="0" Text="Unit" />
+                        </Grid>
+                    </StackPanel>
+                </StackPanel>
+
+            </Grid>
+            <GridSplitter Grid.Column="0" Width="1" HorizontalAlignment="Right"
+                          VerticalAlignment="Stretch" Background="DarkGray" />
+            <Grid Grid.Column="1">
+                <StackPanel>
+                    <StackPanel Margin="10">
+                        <Image Width="600" Source="/Assets/Images/CAN1.png" />
+
+                        <TextBlock FontSize="14" FontWeight="Bold" Text="DBC message &amp; signal" />
+                        <Border>
+                            <TextBox Padding="10" Background="#efefef" BorderBrush="Black"
+                                     Text="{Binding CANFrame.DBCSignalString}">
+                                <d:TextBox.Text>
+                                    BO_ 217056256 Message_Name 8 Vector_XXX
+                                    SG_ Signal_Name : 24|24@1+ (0.125,0) [min|max] &quot;unit&quot; Vector_XXX
+                                </d:TextBox.Text>
+                            </TextBox>
+                        </Border>
+                    </StackPanel>
+                    <StackPanel Margin="10 0 10 10">
+                        <TextBlock FontSize="14" FontWeight="Bold" Text="Signal physical value" />
+                        <Border>
+                            <TextBox Padding="10" Background="#efefef" BorderBrush="Black"
+                                     Text="{Binding CANFrame.DBCSignalValueString}">
+                                <d:TextBox.Text>
+                                    Data (HEX) FF1368
+                                    Data (HEX &amp; shifted) FF1368
+                                    Data (DEC) 16716648
+                                    Value = 0.125 * 16716648 + 0 = 2089581
+                                </d:TextBox.Text>
+
+                            </TextBox>
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Grid>
+        <GridSplitter Grid.Row="0" Height="1" HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
+                      Background="DarkGray" />
+        <Grid Grid.Row="1">
+            <StackPanel Margin="10" Orientation="Horizontal">
+                <StackPanel Margin="10 0 10 10">
+                    <TextBlock FontSize="14" FontWeight="Bold" Text="CAN frame" />
+                    <DataGrid HorizontalContentAlignment="Center"
+                              d:ItemsSource="{d:SampleData ItemCount=8}"
+                              AutoGenerateColumns="False" Background="White" CanUserAddRows="False"
+                              ColumnHeaderStyle="{DynamicResource DataGridColumnHeaderStyle1}"
+                              Foreground="DarkBlue"
+                              ItemsSource="{Binding CANFrame.FrameData}"
+                              LoadingRow="DataGrid_LoadingRow"
+                              RowHeaderStyle="{DynamicResource DataGridRowHeaderStyle1}"
+                              SelectionMode="Extended" SelectionUnit="Cell">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Binding="{Binding Data}"
+                                                CanUserSort="False"
+                                                CellStyle="{StaticResource DataGridCellStyle2}"
+                                                Header="Data(DEC)" />
+                            <DataGridTextColumn Binding="{Binding DataHex}"
+                                                CanUserSort="False"
+                                                CellStyle="{StaticResource DataGridCellStyle1}"
+                                                Header="Data(HEX)" IsReadOnly="True" />
+                            <DataGridTextColumn Binding="{Binding DataBin}"
+                                                CanUserSort="False"
+                                                CellStyle="{StaticResource DataGridCellStyle1}"
+                                                Header="Data(BIN)" IsReadOnly="True" />
+                            <DataGridTemplateColumn CanUserSort="False" Header="7" IsReadOnly="True">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate DataType="{x:Type models:BitSignal}">
+                                        <Border DataContext="{Binding BitSignals[7]}" Style="{StaticResource IndexStatusBorder}">
+                                            <TextBlock Style="{StaticResource DataNumberTextBlock}" />
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn CanUserSort="False" Header="6" IsReadOnly="True">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate DataType="{x:Type models:BitSignal}">
+                                        <Border DataContext="{Binding BitSignals[6]}" Style="{StaticResource IndexStatusBorder}">
+                                            <TextBlock Style="{StaticResource DataNumberTextBlock}" />
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn CanUserSort="False" Header="5" IsReadOnly="True">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate DataType="{x:Type models:BitSignal}">
+                                        <Border DataContext="{Binding BitSignals[5]}" Style="{StaticResource IndexStatusBorder}">
+                                            <TextBlock Style="{StaticResource DataNumberTextBlock}" />
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn CanUserSort="False" Header="4" IsReadOnly="True">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate DataType="{x:Type models:BitSignal}">
+                                        <Border DataContext="{Binding BitSignals[4]}" Style="{StaticResource IndexStatusBorder}">
+                                            <TextBlock Style="{StaticResource DataNumberTextBlock}" />
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn CanUserSort="False" Header="3" IsReadOnly="True">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate DataType="{x:Type models:BitSignal}">
+                                        <Border DataContext="{Binding BitSignals[3]}" Style="{StaticResource IndexStatusBorder}">
+                                            <TextBlock Style="{StaticResource DataNumberTextBlock}" />
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn CanUserSort="False" Header="2" IsReadOnly="True">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate DataType="{x:Type models:BitSignal}">
+                                        <Border DataContext="{Binding BitSignals[2]}" Style="{StaticResource IndexStatusBorder}">
+                                            <TextBlock Style="{StaticResource DataNumberTextBlock}" />
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn CanUserSort="False" Header="1" IsReadOnly="True">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate DataType="{x:Type models:BitSignal}">
+                                        <Border DataContext="{Binding BitSignals[1]}" Style="{StaticResource IndexStatusBorder}">
+                                            <TextBlock Style="{StaticResource DataNumberTextBlock}" />
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn CanUserSort="False" Header="0" IsReadOnly="True">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate DataType="{x:Type models:BitSignal}">
+                                        <Border DataContext="{Binding BitSignals[0]}" Style="{StaticResource IndexStatusBorder}">
+                                            <TextBlock Style="{StaticResource DataNumberTextBlock}" />
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+                <StackPanel Margin="10 0 0 0">
+                    <TextBlock HorizontalAlignment="Center" FontSize="14" FontWeight="Bold" Text="Bit indices" />
+                    <DataGrid d:ItemsSource="{d:SampleData ItemCount=8}"
+                              AutoGenerateColumns="False" CanUserAddRows="False"
+                              ColumnHeaderStyle="{DynamicResource DataGridColumnHeaderStyle1}"
+                              Foreground="DarkGray"
+                              ItemsSource="{Binding CANFrame.FrameData}"
+                              LoadingRow="DataGrid_LoadingRow"
+                              RowHeaderStyle="{DynamicResource DataGridRowHeaderStyle1}"
+                              SelectionMode="Extended" SelectionUnit="Cell">
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn CanUserSort="False" Header="7" IsReadOnly="True">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate DataType="{x:Type models:BitSignal}">
+                                        <Border DataContext="{Binding BitSignals[7]}" Style="{StaticResource IndexStatusBorder}">
+                                            <TextBlock Style="{StaticResource FrameIndexTextBlock}" />
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn CanUserSort="False" Header="6" IsReadOnly="True">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate DataType="{x:Type models:BitSignal}">
+                                        <Border DataContext="{Binding BitSignals[6]}" Style="{StaticResource IndexStatusBorder}">
+                                            <TextBlock Style="{StaticResource FrameIndexTextBlock}" />
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn CanUserSort="False" Header="5" IsReadOnly="True">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate DataType="{x:Type models:BitSignal}">
+                                        <Border DataContext="{Binding BitSignals[5]}" Style="{StaticResource IndexStatusBorder}">
+                                            <TextBlock Style="{StaticResource FrameIndexTextBlock}" />
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn CanUserSort="False" Header="4" IsReadOnly="True">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate DataType="{x:Type models:BitSignal}">
+                                        <Border DataContext="{Binding BitSignals[4]}" Style="{StaticResource IndexStatusBorder}">
+                                            <TextBlock Style="{StaticResource FrameIndexTextBlock}" />
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn CanUserSort="False" Header="3" IsReadOnly="True">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate DataType="{x:Type models:BitSignal}">
+                                        <Border DataContext="{Binding BitSignals[3]}" Style="{StaticResource IndexStatusBorder}">
+                                            <TextBlock Style="{StaticResource FrameIndexTextBlock}" />
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn CanUserSort="False" Header="2" IsReadOnly="True">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate DataType="{x:Type models:BitSignal}">
+                                        <Border DataContext="{Binding BitSignals[2]}" Style="{StaticResource IndexStatusBorder}">
+                                            <TextBlock Style="{StaticResource FrameIndexTextBlock}" />
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn CanUserSort="False" Header="1" IsReadOnly="True">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate DataType="{x:Type models:BitSignal}">
+                                        <Border DataContext="{Binding BitSignals[1]}" Style="{StaticResource IndexStatusBorder}">
+                                            <TextBlock Style="{StaticResource FrameIndexTextBlock}" />
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn CanUserSort="False" Header="0" IsReadOnly="True">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate DataType="{x:Type models:BitSignal}">
+                                        <Border DataContext="{Binding BitSignals[0]}" Style="{StaticResource IndexStatusBorder}">
+                                            <TextBlock Style="{StaticResource FrameIndexTextBlock}" />
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+                <StackPanel Margin="20 0 0 0">
+                    <TextBlock HorizontalAlignment="Center" FontSize="14" FontWeight="Bold" Text="Value" />
+                    <Border MinWidth="80" BorderBrush="LightGray" BorderThickness="1" CornerRadius="5">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="auto" />
+                                <RowDefinition Height="auto" />
+                                <RowDefinition Height="auto" />
+                                <RowDefinition Height="auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Margin="5" Text="Dec" />
+                            <TextBox Grid.Row="0" Grid.Column="1" Margin="5" d:Text="15" BorderBrush="Transparent"
+                                     Foreground="{StaticResource Blue1}"
+                                     Text="{Binding CANFrame.ValueDecString}" />
+
+                            <TextBlock Grid.Row="1" Grid.Column="0" Margin="5" Text="Hex" />
+                            <TextBox Grid.Row="1" Grid.Column="1" Margin="5" d:Text="15" BorderBrush="Transparent"
+                                     Foreground="{StaticResource Blue1}"
+                                     Text="{Binding CANFrame.ValueHexString}" />
+
+                            <TextBlock Grid.Row="2" Grid.Column="0" Margin="5" Text="Bin" />
+                            <TextBox Grid.Row="2" Grid.Column="1" Margin="5" d:Text="15" BorderBrush="Transparent"
+                                     Foreground="{StaticResource Blue1}"
+                                     Text="{Binding CANFrame.ValueBinString}" />
+
+                            <TextBlock Grid.Row="3" Grid.Column="0" Margin="5" Text="EngineeringValue" />
+                            <TextBox Grid.Row="3" Grid.Column="1" Margin="5" d:Text="15" BorderBrush="Transparent"
+                                     Foreground="{StaticResource Blue1}"
+                                     Text="{Binding CANFrame.EngineeringValue}" />
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </Grid>
+
+</Page>
